@@ -2,16 +2,16 @@
 A collection of (personal-use) scripts for arranging windows into predefined layouts in Sway.
 
 ## mpv.sh
+Organizes mpv windows nicely: 1x 1920x1080 window and 0-3 smaller windows on top. For use with a dedicated 2560x1440 media+chat monitor. 
 ![mpv-demo](https://github.com/KogasaPls/sway-layouts/blob/main/screenshots/mpv-demo.png)
 
-For use with a dedicated 2560x1440 media+chat monitor. Organizes mpv windows nicely: 1x 1920x1080 window and 0-3 smaller windows on top. 
 
 [image:
 
 ## runelite.sh
+Positions 3 RuneLite clients into a 1280x720 main window with two 1024x576 alt windows.
 ![runelite-demo](https://github.com/KogasaPls/sway-layouts/blob/main/screenshots/runelite-demo.png)
 
-Positions 3 RuneLite clients into a 1280x720 main window with two 1024x576 alt windows.
 All three windows are exactly 16:9 and divisible by 8 in both directions, for optimal scaling, and the layout is
 designed for playing 1 main + 2 rune dragon alts with minimal cognitive/eye strain.
 Only works on a 2560x1440 monitor with 1px borders, 30px bar, and the following very specific and irregular gaps:
