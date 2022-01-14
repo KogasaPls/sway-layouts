@@ -2,7 +2,7 @@
 A collection of (personal-use) scripts for arranging windows into predefined layouts in Sway.
 
 ## mpv.sh
-Organizes mpv windows nicely: 1x 1920x1080 window and 0-3 smaller windows on top. For use with a dedicated 2560x1440 media+chat monitor. 
+Organizes mpv windows nicely, with one 1920x1080 window and 0-3 smaller windows on top. For use with a dedicated 2560x1440 media+chat monitor. 
 ![mpv-demo](https://github.com/KogasaPls/sway-layouts/blob/main/screenshots/mpv-demo.png)
 
 
