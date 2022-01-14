@@ -17,6 +17,8 @@
 # bspc config -d IV left_padding 239
 # bspc config -d IV right_padding 239
 
+# Note: you must select a window ("rl0") before running this script. This window is placed next to the RuneLite clients.
+
 swaymsg unmark
 swaymsg mark rl0
 
