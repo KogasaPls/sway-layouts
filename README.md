@@ -9,9 +9,9 @@ Organizes mpv windows nicely, with one 1920x1080 window and 0-3 smaller windows 
 Positions 3 RuneLite clients into a 1280x720 main window with two 1024x576 alt windows.
 ![runelite-demo](https://github.com/KogasaPls/sway-layouts/blob/main/screenshots/runelite-demo.png)
 
-All three windows are exactly 16:9 and divisible by 8 in both directions, for optimal scaling, and the layout is
-designed for playing 1 main + 2 rune dragon alts with minimal cognitive/eye strain.
-Only works on a 2560x1440 monitor with 1px borders, 30px bar, and the following very specific and irregular gaps:
+All three windows (not including borders) are exactly 16:9 and divisible by 8 in both directions for optimal scaling.
+The layout is designed for playing 1 main + 2 rune dragon alts with minimal cognitive/eye/wrist strain.
+Assumes a 2560x1440 monitor with 1px borders, 30px bar tall bar at the top, and the following very specific and irregular gaps:
 
 Sway:
 ```
