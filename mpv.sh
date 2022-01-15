@@ -19,7 +19,8 @@ swaymsg [app_id="firefox" title=".*Chat.*Destiny\.gg"] mark dgg #bottom chat
 
 swaymsg [con_mark="chat"] move container to workspace "$targetWS"
 if (("$numWins" == 0)); then #if there's no mpv windows to position, use something... WTB placeholders pls
-  swaymsg [workspace=$sourceWS] mark win1
+  #  swaymsg [workspace=$sourceWS] mark win1 ##will un-tag dgg or chat
+  swaymsg [workspace=$sourceWS app_id="foot"] mark win1
 else
   swaymsg [workspace="$sourceWS" app_id="mpv"] mark win1
 fi
