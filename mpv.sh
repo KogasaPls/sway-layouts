@@ -1,72 +1,82 @@
 #!/bin/bash
-tree="$(swaymsg -t get_tree)"
-
 ## Since rearranging is hard, we prefer to move everything from one workspace
 ## to a clean one. We use 11 and 12 for our mpv monitor.
-if [ -z "$(echo $tree | grep '"current_workspace": "11",')" ]; then
-  sourceWS=12
-  targetWS=11
-else
-  sourceWS=11
-  targetWS=12
-fi
-
-numWins="$(echo "$tree" | grep '"app_id": "mpv"' -c)" #number of mpv clients
-
 swaymsg unmark
-swaymsg [app_id="chatterino"] mark chat                         #top chat
-swaymsg [app_id="firefox" title=".*Chat.*Destiny\.gg"] mark dgg #bottom chat
-
-swaymsg [con_mark="chat"] move container to workspace "$targetWS"
-if (("$numWins" == 0)); then #if there's no mpv windows to position, use something... WTB placeholders pls
-  #  swaymsg [workspace=$sourceWS] mark win1 ##will un-tag dgg or chat
-  swaymsg [workspace=$sourceWS app_id="foot"] mark win1
+tree="$(swaymsg -t get_tree)"
+if [ -z "$(echo $tree | grep '"current_workspace": "11",')" ]; then
+  initial=12
+  target=11
 else
-  swaymsg [workspace="$sourceWS" app_id="mpv"] mark win1
-fi
-# Put win1 to the left of chat(s) with width 1920px
-swaymsg [con_mark="chat"] splith
-swaymsg [con_mark="win1"] move to mark chat
-swaymsg [con_mark="win1"] swap container with mark chat
-swaymsg [con_mark="chat"] resize set width 640px
-swaymsg [con_mark="chat"] splitv
-swaymsg [con_mark="dgg"] move container to mark chat
-
-if (("$numWins" <= 1)); then
-  swaymsg workspace "$targetWS"
-  exit
+  initial=11
+  target=12
 fi
 
-# Put win2 above win1, so that win1 has size 1920x1080
-swaymsg [workspace="$sourceWS" app_id="mpv"] mark win2
-swaymsg [con_mark="win1"] splitv
-swaymsg [con_mark="win2"] move to mark win1
-swaymsg [con_mark="win2"] swap container with mark win1
-swaymsg [con_mark="win1"] resize set width 1920px height 1080px
+numMpv=0
+numChats=0
 
-if (("$numWins" == 2)); then
-  swaymsg workspace "$targetWS"
-  exit
+#select pids on left monitor (x < 2560)
+IFS=$'\n'
+wins=("$(echo "$tree" | jq '.. | (.nodes? // empty)[] | select(.pid and .visible and .rect.x < 2560) | "\(.pid) MPVSCRIPTSEPARATOR \(.app_id) MPVSCRIPTSEPARATOR \(.name)"' | tr -d '"')")
+for win in $wins; do
+  pid="$(echo $win | awk -F' MPVSCRIPTSEPARATOR ' '{print $1}')"
+  app="$(echo $win | awk -F' MPVSCRIPTSEPARATOR ' '{print $2}')"
+  name="$(echo $win | awk -F' MPVSCRIPTSEPARATOR ' '{print $3}')"
+  echo "$app ($pid) - $name"
+  if [[ "$name" == "placeholder-foot*" ]]; then
+    kill "$pid"
+  elif [[ "$app" == "com.chatterino.https://www.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
+    let "numChats=$numChats+1"
+    swaymsg "[pid=$pid] mark --add \"chat$numChats\""
+  else
+    let "numMpv=$numMpv+1"
+    swaymsg "[pid=$pid] mark --add \"mpv$numMpv\""
+  fi
+done
+
+##TODO: make sense if there's no MPV's or no chats
+if false; then
+  if [[ "$numMpv" == 0 ]] && [[ "$numChats" -gt 0 ]]; then
+    numLoops=0
+    nohup 'foot -T "placeholder-foot-mpv"'
+    swaymsg '[title="placeholder-foot"] mark --add chat1'
+    numMpv=1
+  elif [[ "$numChats" == 0 ]] && [[ "$numMpv" -gt 0 ]]; then
+    numLoops=0
+    nohup 'foot -T "placeholder-foot-chat"'
+    swaymsg '[title="placeholder-foot-chat"] mark --add chat1'
+    numChats=1
+  fi
 fi
+
+swaymsg workspace 13
+
+echo "Moving to workspace $target"
+swaymsg [con_mark="chat1"] move container to workspace $target
+swaymsg [con_mark="chat2"] move container to workspace $target
+
+swaymsg [con_mark="chat1"] splith
+swaymsg [con_mark="mpv1"] move container to mark chat1
+swaymsg [con_mark="mpv1"] swap container with mark chat1
+swaymsg [con_mark="chat1"] resize set width 640px
+swaymsg [con_mark="chat1"] splitv
+swaymsg [con_mark="chat2"] move container to mark chat1
+
+swaymsg [con_mark="mpv1"] splitv
+swaymsg [con_mark="mpv2"] move container to mark mpv1
+swaymsg [con_mark="mpv2"] swap container with mark mpv1
+swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
 
 # Put win3 next to win2 so they're evenly split
-swaymsg [workspace="$sourceWS" app_id="mpv"] mark win3
-swaymsg [con_mark="win2"] splith
-swaymsg [con_mark="win3"] move to mark win2
-swaymsg [con_mark="win3"] swap container with mark win2
-
-if (("$numWins" == 3)); then
-  swaymsg workspace "$targetWS"
-  exit
-fi
+swaymsg [con_mark="mpv2"] splith
+swaymsg [con_mark="mpv3"] move container to mark mpv2
+swaymsg [con_mark="mpv3"] swap container with mark mpv2
 
 # Put win4 next to win2 and win3 and then size them evenly
-swaymsg [workspace="$sourceWS" app_id="mpv"] mark win4
-swaymsg [con_mark="win3"] splith
-swaymsg [con_mark="win4"] move to mark win3
-swaymsg [con_mark="win4"] swap container with mark win3
-swaymsg [con_mark="win2"] resize set width 640
-swaymsg [con_mark="win3"] resize set width 640
-swaymsg [con_mark="win4"] resize set width 640
+swaymsg [con_mark="mpv3"] splith
+swaymsg [con_mark="mpv4"] move container to mark mpv3
+swaymsg [con_mark="mpv4"] swap container with mark mpv3
+swaymsg [con_mark="mpv2"] resize set width 640
+swaymsg [con_mark="mpv3"] resize set width 640
+swaymsg [con_mark="mpv4"] resize set width 640
 
-swaymsg workspace "$targetWS"
+swaymsg workspace $target
