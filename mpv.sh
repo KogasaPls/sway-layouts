@@ -14,16 +14,17 @@ fi
 numMpv=0
 numChats=0
 
-#IFS=$'\n'
-tree=$(swaymsg -t get_tree)
-readarray wins < <(echo "$tree" | jq -r '.. | (.nodes? //empty)[] |  select(.pid and .visible) | "\(.pid) \(.app_id) \(.rect.x) \(.name)"')
-for win in "${wins[@]}"; do
+readarray wins < <(swaymsg -t get_tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid and .visible) | "\(.rect.x) \(.rect.y) \(.pid) \(.app_id) \(.name)"')
+IFS=$'\n' sortedWins=($(sort -k1,1n -k2,2nr <<<"${wins[*]}"))
+unset IFS
+for win in "${sortedWins[@]}"; do
   win=($win) #convert to array
-  pid="${win[0]}"
-  app="${win[1]}"
-  xpos="${win[2]}"
-  name="${win[@]:3}"
-  echo "$app ($pid) \"$name\""
+  xpos="${win[0]}"
+  ypos="${win[1]}"
+  pid="${win[2]}"
+  app="${win[3]}"
+  name="${win[@]:4}"
+  echo "$app ($pid) at pos ("$xpos", "$ypos") \"$name\""
   if [[ "$name" == "placeholder-foot*" ]]; then
     kill "$pid"
   elif [[ "$app" == "com.chatterino.https://www.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
@@ -77,16 +78,14 @@ $((numMpv > 2))*)
   # Put win3 next to win2 so they're evenly split
   swaymsg [con_mark="mpv2"] splith
   swaymsg [con_mark="mpv3"] move container to mark mpv2
-  swaymsg [con_mark="mpv3"] swap container with mark mpv2
   ;;&
 $((numMpv > 3))*)
   # Put win4 next to win2 and win3 and then size them evenly
   swaymsg [con_mark="mpv3"] splith
   swaymsg [con_mark="mpv4"] move container to mark mpv3
-  swaymsg [con_mark="mpv4"] swap container with mark mpv3
-  swaymsg [con_mark="mpv2"] resize set width 640
-  swaymsg [con_mark="mpv3"] resize set width 640
-  swaymsg [con_mark="mpv4"] resize set width 640
+  swaymsg [con_mark="mpv2"] resize set width 640px
+  swaymsg [con_mark="mpv3"] resize set width 640px
+  swaymsg [con_mark="mpv4"] resize set width 640px
   ;;
 esac
 
@@ -94,6 +93,7 @@ if [[ "$numChats" == 2 ]]; then
   swaymsg [con_mark="chat2"] move container to workspace $target
   swaymsg [con_mark="chat1"] splitv
   swaymsg [con_mark="chat2"] move container to mark chat1
+  swaymsg [con_mark="chat2"] swap container with mark chat1
 fi
 
 swaymsg workspace $target
