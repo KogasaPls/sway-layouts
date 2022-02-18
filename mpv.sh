@@ -14,20 +14,22 @@ fi
 numMpv=0
 numChats=0
 
-#select pids on left monitor (x < 2560)
-IFS=$'\n'
-wins=("$(echo "$tree" | jq '.. | (.nodes? // empty)[] | select(.pid and .visible and .rect.x < 2560) | "\(.pid) MPVSCRIPTSEPARATOR \(.app_id) MPVSCRIPTSEPARATOR \(.name)"' | tr -d '"')")
-for win in $wins; do
-  pid="$(echo $win | awk -F' MPVSCRIPTSEPARATOR ' '{print $1}')"
-  app="$(echo $win | awk -F' MPVSCRIPTSEPARATOR ' '{print $2}')"
-  name="$(echo $win | awk -F' MPVSCRIPTSEPARATOR ' '{print $3}')"
-  echo "$app ($pid) - $name"
+#IFS=$'\n'
+tree=$(swaymsg -t get_tree)
+readarray wins < <(echo "$tree" | jq -r '.. | (.nodes? //empty)[] |  select(.pid and .visible) | "\(.pid) \(.app_id) \(.rect.x) \(.name)"')
+for win in "${wins[@]}"; do
+  win=($win) #convert to array
+  pid="${win[0]}"
+  app="${win[1]}"
+  xpos="${win[2]}"
+  name="${win[@]:3}"
+  echo "$app ($pid) \"$name\""
   if [[ "$name" == "placeholder-foot*" ]]; then
     kill "$pid"
   elif [[ "$app" == "com.chatterino.https://www.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
     let "numChats=$numChats+1"
     swaymsg "[pid=$pid] mark --add \"chat$numChats\""
-  else
+  elif [[ "$app" == "mpv" ]]; then
     let "numMpv=$numMpv+1"
     swaymsg "[pid=$pid] mark --add \"mpv$numMpv\""
   fi
@@ -48,35 +50,50 @@ if false; then
   fi
 fi
 
-swaymsg workspace 13
+# (to avoid swaymsg 'node not found' errors
+# fallthrough until we run out of windows to move
+case 1:${numMpv:--} in
+1:*[!0-9]*)
+  ! echo NAN
+  exit
+  ;;
+$((numMpv > 0))*)
+  swaymsg workspace 13
+  # echo "Moving to workspace $target"
+  swaymsg [con_mark="chat1"] move container to workspace $target
 
-echo "Moving to workspace $target"
-swaymsg [con_mark="chat1"] move container to workspace $target
-swaymsg [con_mark="chat2"] move container to workspace $target
+  swaymsg [con_mark="chat1"] splith
+  swaymsg [con_mark="mpv1"] move container to mark chat1
+  swaymsg [con_mark="mpv1"] swap container with mark chat1
+  swaymsg [con_mark="chat1"] resize set width 640px
+  ;;&
+$((numMpv > 1))*)
+  swaymsg [con_mark="mpv1"] splitv
+  swaymsg [con_mark="mpv2"] move container to mark mpv1
+  swaymsg [con_mark="mpv2"] swap container with mark mpv1
+  swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
+  ;;&
+$((numMpv > 2))*)
+  # Put win3 next to win2 so they're evenly split
+  swaymsg [con_mark="mpv2"] splith
+  swaymsg [con_mark="mpv3"] move container to mark mpv2
+  swaymsg [con_mark="mpv3"] swap container with mark mpv2
+  ;;&
+$((numMpv > 3))*)
+  # Put win4 next to win2 and win3 and then size them evenly
+  swaymsg [con_mark="mpv3"] splith
+  swaymsg [con_mark="mpv4"] move container to mark mpv3
+  swaymsg [con_mark="mpv4"] swap container with mark mpv3
+  swaymsg [con_mark="mpv2"] resize set width 640
+  swaymsg [con_mark="mpv3"] resize set width 640
+  swaymsg [con_mark="mpv4"] resize set width 640
+  ;;
+esac
 
-swaymsg [con_mark="chat1"] splith
-swaymsg [con_mark="mpv1"] move container to mark chat1
-swaymsg [con_mark="mpv1"] swap container with mark chat1
-swaymsg [con_mark="chat1"] resize set width 640px
-swaymsg [con_mark="chat1"] splitv
-swaymsg [con_mark="chat2"] move container to mark chat1
-
-swaymsg [con_mark="mpv1"] splitv
-swaymsg [con_mark="mpv2"] move container to mark mpv1
-swaymsg [con_mark="mpv2"] swap container with mark mpv1
-swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
-
-# Put win3 next to win2 so they're evenly split
-swaymsg [con_mark="mpv2"] splith
-swaymsg [con_mark="mpv3"] move container to mark mpv2
-swaymsg [con_mark="mpv3"] swap container with mark mpv2
-
-# Put win4 next to win2 and win3 and then size them evenly
-swaymsg [con_mark="mpv3"] splith
-swaymsg [con_mark="mpv4"] move container to mark mpv3
-swaymsg [con_mark="mpv4"] swap container with mark mpv3
-swaymsg [con_mark="mpv2"] resize set width 640
-swaymsg [con_mark="mpv3"] resize set width 640
-swaymsg [con_mark="mpv4"] resize set width 640
+if [[ "$numChats" == 2 ]]; then
+  swaymsg [con_mark="chat2"] move container to workspace $target
+  swaymsg [con_mark="chat1"] splitv
+  swaymsg [con_mark="chat2"] move container to mark chat1
+fi
 
 swaymsg workspace $target
