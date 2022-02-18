@@ -27,12 +27,11 @@ swaymsg [title="RuneLite.*Maldemort"] mark rl2
 swaymsg [title="RuneLite.*Potaptwo"] mark rl3
 
 swaymsg [con_mark="rl0"] splitv
-
-swaymsg [con_mark="rl2"] move to mark rl0
+swaymsg [con_mark="rl2"] move container to mark rl0
 swaymsg [con_mark="rl2"] splith
-swaymsg [con_mark="rl3"] move to mark rl2
+swaymsg [con_mark="rl3"] move container to mark rl2
 swaymsg [con_mark="rl0"] splith
-swaymsg [con_mark="rl1"] move to mark rl0
+swaymsg [con_mark="rl1"] move container to mark rl0
 swaymsg [con_mark="rl1"] swap container with mark rl0
 
 swaymsg [con_mark="rl1"] resize set width 1282px height 722px
