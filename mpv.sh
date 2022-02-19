@@ -23,18 +23,20 @@ fi
 
 numInvisWindows=0
 
-readarray wins < <(swaymsg -t get_tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.x) \(.rect.y) \(.pid) \(.app_id) \(.visible) \(.name)"')
+readarray wins < <(swaymsg -t get_tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.x) \(.rect.y) \(.rect.width) \(.rect.height) \(.pid) \(.app_id) \(.visible) \(.name)"')
 IFS=$'\n' sortedWins=($(sort -k1,1n -k2,2nr <<<"${wins[*]}"))
 unset IFS
 for win in "${sortedWins[@]}"; do
   win=($win) #convert to array
   xpos="${win[0]}"
   ypos="${win[1]}"
-  pid="${win[2]}"
-  app="${win[3]}"
-  isVisible="${win[4]}"
-  name="${win[@]:5}"
-  echo "$app ($pid) at pos ("$xpos", "$ypos") \"$name\""
+  width="${win[2]}"
+  height="${win[3]}"
+  pid="${win[4]}"
+  app="${win[5]}"
+  isVisible="${win[6]}"
+  name="${win[@]:7}"
+  #echo "$app ($pid) at pos ("$xpos", "$ypos") with size ("$width", "$height") \"$name\""
   if [[ "$app" == "com.chatterino.https://www.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
     let "numChats=$numChats+1"
     swaymsg "[pid=$pid] mark --add \"chat$numChats\""
@@ -42,22 +44,21 @@ for win in "${sortedWins[@]}"; do
       echo "not sorted: $name"
       sorted=false
     fi
-  elif [[ "$app" == "mpv" || $xpos < 2560 ]]; then
-    echo "MPV FOUND: $name"
+  elif [[ "$app" == "mpv" ]] || (("xpos" < 2560)); then
     let "numMpv=$numMpv+1"
     swaymsg "[pid=$pid] mark --add \"mpv$numMpv\""
     if [[ "$isVisible" == "false" ]]; then
       echo "$name is not visible"
       let "numInvisWindows=$numInvisWindows+1"
     else
-      case "$xpos,$ypos" in
-      "0,0" | "640,0" | "1280,0" | "960,0" | "0,360") ;;
-
-      *)
-        echo "not sorted: $name"
+      configurations="0,0,1920,1440, 0,0,1920,360 0,0,960,360 0,0,480,360 960,0,960,360 480,0,480,360 960,0,480,360 0,360,1920,1080"
+      xywh="$xpos,$ypos,$width,$height"
+      if echo $configurations | grep -w $xywh >/dev/null; then
+        continue
+      else
+        echo "not sorted: $name has xwyh $xywh"
         sorted=false
-        ;;
-      esac
+      fi
     fi
     #  elif [[ "$name" == "placeholder-foot*" ]]; then
     #    kill "$pid"
