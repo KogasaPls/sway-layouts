@@ -45,7 +45,7 @@ for win in "${resizeOnlyWins[@]}"; do
   name="${win[@]:7}"
   case "$name" in
   "RuneLite"*)
-    echo "$name ($pid) at pos ($xpos, $ypos)"
+    #    echo "$name ($pid) at pos ($xpos, $ypos)"
     swaymsg [pid=$pid] mark "rl$numWins"
     let numWins="$numWins + 1"
     users+=("${name:11}")
@@ -56,13 +56,10 @@ for win in "${resizeOnlyWins[@]}"; do
     ;;
   esac
   if [[ "$app" == "rl-placeholder" ]]; then
-    echo "Placeholder found ($pid)"
+    #    echo "Placeholder found ($pid)"
     swaymsg [app_id="rl-placeholder"] mark "rl0"
     placeholderExists=true
   fi
-done
-for i in {0..2}; do
-  echo "${xs[i]}+${ws[i]}, ${ys[i]}+${hs[i]}"
 done
 
 # check if windows just need to be resized
