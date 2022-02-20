@@ -23,7 +23,7 @@ fi
 
 numInvisWindows=0
 
-readarray wins < <(swaymsg -t get_tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.x) \(.rect.y) \(.rect.width) \(.rect.height) \(.pid) \(.app_id) \(.visible) \(.name)"')
+readarray wins < <(echo $tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.x) \(.rect.y) \(.rect.width) \(.rect.height) \(.pid) \(.app_id) \(.visible) \(.name)"')
 IFS=$'\n' sortedWins=($(sort -k1,1n -k2,2nr <<<"${wins[*]}"))
 unset IFS
 for win in "${sortedWins[@]}"; do
@@ -48,15 +48,15 @@ for win in "${sortedWins[@]}"; do
     let "numMpv=$numMpv+1"
     swaymsg "[pid=$pid] mark --add \"mpv$numMpv\""
     if [[ "$isVisible" == "false" ]]; then
-      echo "$name is not visible"
+      #      echo "$name is not visible"
       let "numInvisWindows=$numInvisWindows+1"
     else
-      configurations="0,0,1920,1440, 0,0,1920,360 0,0,960,360 0,0,480,360 960,0,960,360 480,0,480,360 960,0,480,360 0,360,1920,1080"
+      configurations="0,0,1920,1440, 0,0,1920,360 0,0,960,360 0,0,640,360 1280,0,640,360 640,0,640,360 1280,0,640,360 0,360,1920,1080"
       xywh="$xpos,$ypos,$width,$height"
       if echo $configurations | grep -w $xywh >/dev/null; then
         continue
       else
-        echo "not sorted: $name has xwyh $xywh"
+        #        echo "not sorted: $name has xwyh $xywh"
         sorted=false
       fi
     fi
@@ -116,17 +116,14 @@ move() {
 
 if [[ "$sorted" == true && "$numInvisWindows" == 0 ]]; then
   # already sorted, just move the new window in place
-  echo "sorted and no invisible windows"
   exit
 elif [[ "$sorted" == true && "$numInvisWindows" > 0 ]]; then
-  echo "sorted and some invisible windows"
   let start="$numMpv - $numInvisWindows + 1"
   for ((n = $start; n <= $numMpv; n++)); do
     move "$n"
   done
 else
   # move everything to a new workspace and arrange it from scratch
-  echo "not sorted"
   swaymsg workspace 13 #switch to blank workspace while moving stuff
   for ((n = 0; n <= $numMpv; n++)); do
     move "$n"
