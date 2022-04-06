@@ -19,7 +19,7 @@
 
 swaymsg unmark
 
-numWins=1
+numWins=0
 placeholderExists=false
 
 tree="$(swaymsg -t get_tree)"
@@ -45,9 +45,9 @@ for win in "${resizeOnlyWins[@]}"; do
   name="${win[@]:7}"
   case "$name" in
   "RuneLite"*)
-    #    echo "$name ($pid) at pos ($xpos, $ypos)"
-    swaymsg [pid=$pid] mark "rl$numWins"
+    echo "$name ($pid) at pos ($xpos, $ypos)"
     let numWins="$numWins + 1"
+    swaymsg [pid=$pid] mark "rl$numWins"
     users+=("${name:11}")
     xs+=("$xpos")
     ys+=("$ypos")
@@ -62,40 +62,59 @@ for win in "${resizeOnlyWins[@]}"; do
   fi
 done
 
-# check if windows just need to be resized
-if [[ "${xs[0]}" != 2809 || "${xs[1]}" != 2809 ]] || (("${xs[2]}" != "${xs[1]}" + "${ws[1]}" + 10)) || (("${ys[1]}" != "${ys[0]}" + "${hs[0]}" + 10)); then
-  resizeOnly=false
-fi
+case $numWins in
+1)
+  # setup workspace for 1 1280x720 window, centered-ish
+  swaymsg [workspace=4] gaps left current set 629
+  swaymsg [workspace=4] gaps right current set 629
+  swaymsg [workspace=4] gaps top current set 319
+  swaymsg [workspace=4] gaps bottom current set 349
+  swaymsg [app_id="rl-notification.py" title="${users[0]}"] move absolute position 3200 360
+  ;;
 
-if [ $placeholderExists == false ]; then
-  nohup footclient --app-id "rl-placeholder" &
-  sleep 0.2
-  swaymsg [app_id="rl-placeholder"] mark "rl0"
-fi
+2) ;; # todo
 
-if [[ $resizeOnly == false ]]; then
-  swaymsg [workspace=4] move to workspace 5
-  swaymsg [con_mark="rl0"] move to workspace 4
+3)
+  # setup workspace for 3 windows, 1 big + 2 small
+  swaymsg [workspace=4] gaps left current set 239
+  swaymsg [workspace=4] gaps right current set 239
+  swaymsg [workspace=4] gaps top current set 40
+  swaymsg [workspace=4] gaps bottom current set 40
+  # check if windows just need to be resized
+  if [[ "${xs[0]}" != 2809 || "${xs[1]}" != 2809 ]] || (("${xs[2]}" != "${xs[1]}" + "${ws[1]}" + 10)) || (("${ys[1]}" != "${ys[0]}" + "${hs[0]}" + 10)); then
+    resizeOnly=false
+  fi
 
-  swaymsg [con_mark="rl0"] splitv
-  swaymsg [con_mark="rl2"] move to mark rl0
-  swaymsg [con_mark="rl2"] splith
-  swaymsg [con_mark="rl3"] move to mark rl2
-  swaymsg [con_mark="rl0"] splith
-  swaymsg [con_mark="rl1"] move to mark rl0
-  swaymsg [con_mark="rl1"] swap container with mark rl0
-fi
+  if [[ $resizeOnly == false ]]; then
+    if [ $placeholderExists == false ]; then
+      nohup footclient --app-id "rl-placeholder" &
+      sleep 0.2
+      swaymsg [app_id="rl-placeholder"] mark "rl0"
+    fi
+    swaymsg [workspace=4] move to workspace 5
+    swaymsg [con_mark="rl0"] move to workspace 4
 
-swaymsg [con_mark="rl1"] resize set width 1282px height 722px
-swaymsg [con_mark="rl2"] resize set width 1026px height 578px
-swaymsg [con_mark="rl3"] resize set width 1026px height 578px
+    swaymsg [con_mark="rl0"] splitv
+    swaymsg [con_mark="rl2"] move to mark rl0
+    swaymsg [con_mark="rl2"] splith
+    swaymsg [con_mark="rl3"] move to mark rl2
+    swaymsg [con_mark="rl0"] splith
+    swaymsg [con_mark="rl1"] move to mark rl0
+    swaymsg [con_mark="rl1"] swap container with mark rl0
+  fi
 
-if ! [ -z "${users[0]}" ]; then
-  swaymsg [app_id="rl-notification.py" title="${users[0]}"] move absolute position 2810 81
-fi
-if ! [ -z "${users[1]}" ]; then
-  swaymsg [app_id="rl-notification.py" title="${users[1]}"] move absolute position 2810 813
-fi
-if ! [ -z "${users[2]}" ]; then
-  swaymsg [app_id="rl-notification.py" title="${users[2]}"] move absolute position 3846 813
-fi
+  swaymsg [con_mark="rl1"] resize set width 1282px height 722px
+  swaymsg [con_mark="rl2"] resize set width 1026px height 578px
+  swaymsg [con_mark="rl3"] resize set width 1026px height 578px
+
+  if ! [ -z "${users[0]}" ]; then
+    swaymsg [app_id="rl-notification.py" title="${users[0]}"] move absolute position 2810 81
+  fi
+  if ! [ -z "${users[1]}" ]; then
+    swaymsg [app_id="rl-notification.py" title="${users[1]}"] move absolute position 2810 813
+  fi
+  if ! [ -z "${users[2]}" ]; then
+    swaymsg [app_id="rl-notification.py" title="${users[2]}"] move absolute position 3846 813
+  fi
+  ;;
+esac
