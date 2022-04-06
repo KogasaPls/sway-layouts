@@ -9,11 +9,12 @@ Organizes mpv windows nicely, with one 1920x1080 window and 0-3 smaller windows 
 
 ## runelite.sh
 
-Positions 3 RuneLite clients in a suitable layout:
-1 client: a single 1280x720 main window, centered
-2 clients: TODO
-3 clients: a 1280x720 main window with two 1024x576 alt windows and 1 placeholder terminal.
-![runelite-demo](https://github.com/KogasaPls/sway-layouts/blob/main/screenshots/runelite-demo.png)
+Positions up to 3 RuneLite clients in a suitable layout.
+
+- 1 client: a single 1280x720 main window, centered
+- 2 clients: TODO
+- 3 clients: a 1280x720 main window with two 1024x576 alt windows and 1 placeholder terminal.
+  ![runelite-demo](https://github.com/KogasaPls/sway-layouts/blob/main/screenshots/runelite-demo.png)
 
 All windows (not including borders) are exactly 16:9 and divisible by 8 in both directions for optimal scaling.
 The 3-client layout is designed for playing 1 main + 2 rune dragon alts with minimal cognitive/eye/wrist strain.
