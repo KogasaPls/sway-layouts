@@ -41,22 +41,26 @@ for win in "${sortedWins[@]}"; do
     let "numChats=$numChats+1"
     swaymsg "[pid=$pid] mark --add \"chat$numChats\""
     if [[ "$xpos" != 1920 ]]; then
-      echo "not sorted: $name"
+      #      echo "not sorted: $name"
       sorted=false
     fi
   elif [[ "$app" == "mpv" ]] || (("xpos" < 2560)); then
     let "numMpv=$numMpv+1"
+    #    echo "mpv$numMpv : $name"
     swaymsg "[pid=$pid] mark --add \"mpv$numMpv\""
     if [[ "$isVisible" == "false" ]]; then
       #      echo "$name is not visible"
+      xywh="$xpos,$ypos,$width,$height"
+      #      echo "invisible: $name at xywh $xywh"
       let "numInvisWindows=$numInvisWindows+1"
     else
-      configurations="0,0,1920,1440, 0,0,1920,360 0,0,960,360 0,0,640,360 1280,0,640,360 640,0,640,360 1280,0,640,360 0,360,1920,1080"
+      configurations="0,0,1920,1440, 0,0,1920,360 0,0,960,360 0,0,640,360 1280,0,640,360 640,0,640,360 1280,0,640,360 0,360,1920,1080 960,0,960,360"
       xywh="$xpos,$ypos,$width,$height"
       if echo $configurations | grep -w $xywh >/dev/null; then
+        #        echo "sorted: $name has xywh $xywh"
         continue
       else
-        #        echo "not sorted: $name has xwyh $xywh"
+        #        echo "not sorted: $name has xywh $xywh"
         sorted=false
       fi
     fi
@@ -90,13 +94,11 @@ move() {
     swaymsg [con_mark="chat1"] splith
     swaymsg [con_mark="mpv1"] move container to mark chat1
     swaymsg [con_mark="mpv1"] swap container with mark chat1
-    swaymsg [con_mark="chat1"] resize set width 640px
     ;;
   2)
     swaymsg [con_mark="mpv1"] splitv
     swaymsg [con_mark="mpv2"] move container to mark mpv1
     swaymsg [con_mark="mpv2"] swap container with mark mpv1
-    swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
     ;;
   3)
     # Put win3 next to win2 so they're evenly split
@@ -107,6 +109,19 @@ move() {
     # Put win4 next to win2 and win3 and then size them evenly
     swaymsg [con_mark="mpv3"] splith
     swaymsg [con_mark="mpv4"] move container to mark mpv3
+    ;;
+  esac
+}
+
+resize() {
+  case $1 in
+  1)
+    swaymsg [con_mark="mpv1"] resize set width 1920px
+    ;;
+  2)
+    swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
+    ;;
+  4)
     swaymsg [con_mark="mpv2"] resize set width 640px
     swaymsg [con_mark="mpv3"] resize set width 640px
     swaymsg [con_mark="mpv4"] resize set width 640px
@@ -115,18 +130,19 @@ move() {
 }
 
 if [[ "$sorted" == true && "$numInvisWindows" == 0 ]]; then
-  # already sorted, just move the new window in place
   exit
 elif [[ "$sorted" == true && "$numInvisWindows" > 0 ]]; then
   let start="$numMpv - $numInvisWindows + 1"
   for ((n = $start; n <= $numMpv; n++)); do
     move "$n"
+    resize "$n"
   done
 else
   # move everything to a new workspace and arrange it from scratch
   swaymsg workspace 13 #switch to blank workspace while moving stuff
   for ((n = 0; n <= $numMpv; n++)); do
     move "$n"
+    resize "$n"
   done
   if [[ "$numChats" == 2 ]]; then
     swaymsg [con_mark="chat1"] splitv
