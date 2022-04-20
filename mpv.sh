@@ -100,15 +100,14 @@ move() {
     swaymsg [con_mark="mpv2"] move container to mark mpv1
     swaymsg [con_mark="mpv2"] swap container with mark mpv1
     ;;
-  3)
+  *)
     # Put win3 next to win2 so they're evenly split
-    swaymsg [con_mark="mpv2"] splith
-    swaymsg [con_mark="mpv3"] move container to mark mpv2
-    ;;
-  4)
-    # Put win4 next to win2 and win3 and then size them evenly
-    swaymsg [con_mark="mpv3"] splith
-    swaymsg [con_mark="mpv4"] move container to mark mpv3
+    let "i=$1+1"
+    echo $1
+    oldWin="mpv$1"
+    newWin="mpv$i"
+    swaymsg "[con_mark=\"$oldWin\"] splith"
+    swaymsg "[con_mark=\"$newWin\"] move container to mark \"$oldWin\""
     ;;
   esac
 }
@@ -121,10 +120,14 @@ resize() {
   2)
     swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
     ;;
-  4)
-    swaymsg [con_mark="mpv2"] resize set width 640px
-    swaymsg [con_mark="mpv3"] resize set width 640px
-    swaymsg [con_mark="mpv4"] resize set width 640px
+  3)
+    :
+    ;;
+  *)
+    let "width=1920/($n-1)"
+    for ((n = 2; n <= $1; n++)); do
+      swaymsg [con_mark=mpv$n] resize set width "$width"px
+    done
     ;;
   esac
 }
