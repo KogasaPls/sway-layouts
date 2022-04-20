@@ -86,10 +86,6 @@ fi
 
 move() {
   case $1 in
-  0)
-    #swaymsg workspace 13 # switch to a blank workspace while everything is moved around
-    swaymsg [con_mark="chat1"] move container to workspace $target
-    ;;
   1)
     swaymsg [con_mark="chat1"] splith
     swaymsg [con_mark="mpv1"] move container to mark chat1
@@ -100,14 +96,13 @@ move() {
     swaymsg [con_mark="mpv2"] move container to mark mpv1
     swaymsg [con_mark="mpv2"] swap container with mark mpv1
     ;;
-  *)
-    # Put win3 next to win2 so they're evenly split
-    let "i=$1+1"
-    echo $1
-    oldWin="mpv$1"
-    newWin="mpv$i"
-    swaymsg "[con_mark=\"$oldWin\"] splith"
-    swaymsg "[con_mark=\"$newWin\"] move container to mark \"$oldWin\""
+  [3-6])
+    # Put the remaining mpv windows in a top bar, sharing space evenly
+    let "i=$1-1"
+    oldWin="mpv$i"
+    newWin="mpv$1"
+    swaymsg [con_mark=$oldWin] splith
+    swaymsg [con_mark=$newWin] move container to mark $oldWin
     ;;
   esac
 }
@@ -120,10 +115,7 @@ resize() {
   2)
     swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
     ;;
-  3)
-    :
-    ;;
-  *)
+  [3-6])
     let "width=1920/($n-1)"
     for ((n = 2; n <= $1; n++)); do
       swaymsg [con_mark=mpv$n] resize set width "$width"px
@@ -143,7 +135,8 @@ elif [[ "$sorted" == true && "$numInvisWindows" > 0 ]]; then
 else
   # move everything to a new workspace and arrange it from scratch
   swaymsg workspace 13 #switch to blank workspace while moving stuff
-  for ((n = 0; n <= $numMpv; n++)); do
+  swaymsg [con_mark="chat1"] move container to workspace $target
+  for ((n = 1; n <= $numMpv; n++)); do
     move "$n"
     resize "$n"
   done
