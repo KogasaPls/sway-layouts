@@ -117,8 +117,8 @@ resize() {
     ;;
   [3-6])
     let "width=1920/($n-1)"
-    for ((n = 2; n <= $1; n++)); do
-      swaymsg [con_mark=mpv$n] resize set width "$width"px
+    for ((j = 2; j <= $1; j++)); do
+      swaymsg [con_mark=mpv$j] resize set width "$width"px
     done
     ;;
   esac
@@ -136,6 +136,7 @@ else
   # move everything to a new workspace and arrange it from scratch
   swaymsg workspace 13 #switch to blank workspace while moving stuff
   swaymsg [con_mark="chat1"] move container to workspace $target
+  echo $numMpv
   for ((n = 1; n <= $numMpv; n++)); do
     move "$n"
     resize "$n"
