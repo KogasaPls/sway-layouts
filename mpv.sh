@@ -23,7 +23,7 @@ fi
 
 numInvisWindows=0
 
-readarray wins < <(echo $tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.x) \(.rect.y) \(.rect.width) \(.rect.height) \(.pid) \(.app_id) \(.visible) \(.name)"')
+readarray wins < <(echo $tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.x) \(.rect.y) \(.rect.width) \(.rect.height) \(.id) \(.app_id) \(.visible) \(.name)"')
 IFS=$'\n' sortedWins=($(sort -k1,1n -k2,2nr <<<"${wins[*]}"))
 unset IFS
 for win in "${sortedWins[@]}"; do
@@ -32,14 +32,14 @@ for win in "${sortedWins[@]}"; do
   ypos="${win[1]}"
   width="${win[2]}"
   height="${win[3]}"
-  pid="${win[4]}"
+  id="${win[4]}"
   app="${win[5]}"
   isVisible="${win[6]}"
   name="${win[@]:7}"
-  #echo "$app ($pid) at pos ("$xpos", "$ypos") with size ("$width", "$height") \"$name\""
+  #echo "$app ($id) at pos ("$xpos", "$ypos") with size ("$width", "$height") \"$name\""
   if [[ "$app" == "com.chatterino.https://www.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
     let "numChats=$numChats+1"
-    swaymsg "[pid=$pid] mark --add \"chat$numChats\""
+    swaymsg "[con_id=$id] mark --add \"chat$numChats\""
     if [[ "$xpos" != 1920 ]]; then
       #      echo "not sorted: $name"
       sorted=false
@@ -47,7 +47,7 @@ for win in "${sortedWins[@]}"; do
   elif [[ "$app" == "mpv" ]] || (("xpos" < 2560)); then
     let "numMpv=$numMpv+1"
     #    echo "mpv$numMpv : $name"
-    swaymsg "[pid=$pid] mark --add \"mpv$numMpv\""
+    swaymsg "[con_id=$id] mark --add \"mpv$numMpv\""
     if [[ "$isVisible" == "false" ]]; then
       #      echo "$name is not visible"
       xywh="$xpos,$ypos,$width,$height"
@@ -64,25 +64,8 @@ for win in "${sortedWins[@]}"; do
         sorted=false
       fi
     fi
-    #  elif [[ "$name" == "placeholder-foot*" ]]; then
-    #    kill "$pid"
   fi
 done
-
-##TODO: make sense if there's no MPV's or no chats
-if false; then
-  if [[ "$numMpv" == 0 ]] && [[ "$numChats" -gt 0 ]]; then
-    numLoops=0
-    nohup 'foot -T "placeholder-foot-mpv"'
-    swaymsg '[title="placeholder-foot"] mark --add chat1'
-    numMpv=1
-  elif [[ "$numChats" == 0 ]] && [[ "$numMpv" -gt 0 ]]; then
-    numLoops=0
-    nohup 'foot -T "placeholder-foot-chat"'
-    swaymsg '[title="placeholder-foot-chat"] mark --add chat1'
-    numChats=1
-  fi
-fi
 
 move() {
   case $1 in

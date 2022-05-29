@@ -44,7 +44,7 @@ for win in "${resizeOnlyWins[@]}"; do
   isVisible="${win[6]}"
   name="${win[@]:7}"
   case "$name" in
-  "RuneLite"*)
+  "RuneLite"* | "OpenOSRS"*)
     echo "$name ($pid) at pos ($xpos, $ypos)"
     let numWins="$numWins + 1"
     swaymsg [pid=$pid] mark "rl$numWins"
