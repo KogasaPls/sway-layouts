@@ -23,7 +23,7 @@ numWins=0
 placeholderExists=false
 
 tree="$(swaymsg -t get_tree)"
-readarray wins < <(echo $tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.y) \(.rect.x) \(.rect.width) \(.rect.height) \(.pid) \(.app_id) \(.visible) \(.name)"')
+readarray wins < <(echo $tree | jq -r '.. | (.nodes? //empty)[] |  select(.pid) | "\(.rect.y) \(.rect.x) \(.rect.width) \(.rect.height) \(.id) \(.app_id) \(.visible) \(.name)"')
 IFS=$'\n' resizeOnlyWins=($(sort -k1,1n -k2,2n <<<"${wins[*]}"))
 unset IFS
 
@@ -39,15 +39,15 @@ for win in "${resizeOnlyWins[@]}"; do
   ypos="${win[0]}"
   width="${win[2]}"
   height="${win[3]}"
-  pid="${win[4]}"
+  id="${win[4]}"
   app="${win[5]}"
   isVisible="${win[6]}"
   name="${win[@]:7}"
   case "$name" in
   "RuneLite"* | "OpenOSRS"*)
-    echo "$name ($pid) at pos ($xpos, $ypos)"
+    echo "$name ($id) at pos ($xpos, $ypos)"
     let numWins="$numWins + 1"
-    swaymsg [pid=$pid] mark "rl$numWins"
+    swaymsg [con_id=$id] mark "rl$numWins"
     users+=("${name:11}")
     xs+=("$xpos")
     ys+=("$ypos")
@@ -76,6 +76,8 @@ case $numWins in
 
 3)
   # setup workspace for 3 windows, 1 big + 2 small
+  swaymsg [workspace=4] gaps inner current set 10
+  swaymsg [workspace=4] gaps outer current set 10
   swaymsg [workspace=4] gaps left current set 239
   swaymsg [workspace=4] gaps right current set 239
   swaymsg [workspace=4] gaps top current set 40
