@@ -70,22 +70,22 @@ done
 move() {
   case $1 in
   1)
-    swaymsg [con_mark="chat1"] splith
-    swaymsg [con_mark="mpv1"] move container to mark chat1
-    swaymsg [con_mark="mpv1"] swap container with mark chat1
+    swaymsg '[con_mark="chat1"] splith'
+    swaymsg '[con_mark="mpv1"] move container to mark chat1'
+    swaymsg '[con_mark="mpv1"] swap container with mark chat1'
     ;;
   2)
-    swaymsg [con_mark="mpv1"] splitv
-    swaymsg [con_mark="mpv2"] move container to mark mpv1
-    swaymsg [con_mark="mpv2"] swap container with mark mpv1
+    swaymsg '[con_mark="mpv1"] splitv'
+    swaymsg '[con_mark="mpv2"] move container to mark mpv1'
+    swaymsg '[con_mark="mpv2"] swap container with mark mpv1'
     ;;
   [3-6])
     # Put the remaining mpv windows in a top bar, sharing space evenly
     let "i=$1-1"
     oldWin="mpv$i"
     newWin="mpv$1"
-    swaymsg [con_mark=$oldWin] splith
-    swaymsg [con_mark=$newWin] move container to mark $oldWin
+    swaymsg '[con_mark='$oldWin'] splith'
+    swaymsg '[con_mark='$newWin'] move container to mark '$oldWin
     ;;
   esac
 }
@@ -93,15 +93,15 @@ move() {
 resize() {
   case $1 in
   1)
-    swaymsg [con_mark="mpv1"] resize set width 1920px
+    swaymsg '[con_mark="mpv1"] resize set width 1920px'
     ;;
   2)
-    swaymsg [con_mark="mpv1"] resize set width 1920px height 1080px
+    swaymsg '[con_mark="mpv1"] resize set width 1920px height 1080px'
     ;;
   [3-6])
     let "width=1920/($n-1)"
     for ((j = 2; j <= $1; j++)); do
-      swaymsg [con_mark=mpv$j] resize set width "$width"px
+      swaymsg '[con_mark=mpv'$j'] resize set width "'$width'"px'
     done
     ;;
   esac
@@ -117,17 +117,16 @@ elif [[ "$sorted" == true && "$numInvisWindows" > 0 ]]; then
   done
 else
   # move everything to a new workspace and arrange it from scratch
-  swaymsg workspace 13 #switch to blank workspace while moving stuff
-  swaymsg [con_mark="chat1"] move container to workspace $target
-  echo $numMpv
+  swaymsg 'workspace 13' #switch to blank workspace while moving stuff
+  swaymsg '[con_mark="chat1"] move container to workspace '$target
   for ((n = 1; n <= $numMpv; n++)); do
     move "$n"
     resize "$n"
   done
   if [[ "$numChats" == 2 ]]; then
-    swaymsg [con_mark="chat1"] splitv
-    swaymsg [con_mark="chat2"] move container to mark chat1
-    swaymsg [con_mark="chat2"] swap container with mark chat1
+    swaymsg '[con_mark="chat1"] splitv'
+    swaymsg '[con_mark="chat2"] move container to mark chat1'
+    swaymsg '[con_mark="chat2"] swap container with mark chat1'
   fi
   swaymsg workspace $target
 fi
