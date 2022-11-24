@@ -65,6 +65,8 @@ done
 case $numWins in
 1)
   # setup workspace for 1 1280x720 window, centered-ish
+  swaymsg [workspace=4] gaps inner current set 10
+  swaymsg [workspace=4] gaps outer current set 10
   swaymsg [workspace=4] gaps left current set 629
   swaymsg [workspace=4] gaps right current set 629
   swaymsg [workspace=4] gaps top current set 319
@@ -72,7 +74,30 @@ case $numWins in
   swaymsg [app_id="rl-notification.py" title="${users[0]}"] move absolute position 3200 360
   ;;
 
-2) ;; # todo
+2)
+  swaymsg [workspace=4] gaps inner current set 30
+  swaymsg [workspace=4] gaps outer current set 0
+  swaymsg [workspace=4] gaps left current set 0
+  swaymsg [workspace=4] gaps right current set 0
+  swaymsg [workspace=4] gaps top current set 0
+  swaymsg [workspace=4] gaps bottom current set 0
+
+  swaymsg mark rl0
+  swaymsg [con_mark="rl0"] splith
+  swaymsg [con_mark="rl1"] move to mark rl0
+  swaymsg [con_mark="rl1"] swap container with mark rl0
+  swaymsg [con_mark="rl1"] splitv
+  swaymsg [con_mark="rl2"] move to mark rl1
+
+  swaymsg [con_mark="rl1"] resize set width 55 ppt height 50 ppt
+
+  if ! [ -z "${users[0]}" ]; then
+    swaymsg [app_id="rl-notification.py" title="${users[0]}"] move absolute position 2591 61
+  fi
+  if ! [ -z "${users[1]}" ]; then
+    swaymsg [app_id="rl-notification.py" title="${users[1]}"] move absolute position 2591 766
+  fi
+  ;; # todo
 
 3)
   # setup workspace for 3 windows, 1 big + 2 small
