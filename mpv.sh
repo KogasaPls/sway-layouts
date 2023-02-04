@@ -37,7 +37,7 @@ for win in "${sortedWins[@]}"; do
   isVisible="${win[6]}"
   name="${win[@]:7}"
   #echo "$app ($id) at pos ("$xpos", "$ypos") with size ("$width", "$height") \"$name\""
-  if [[ "$app" == "com.chatterino.https://www.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
+  if [[ "$app" == "com.chatterino.chatterino" || "$name" == *"Chat - Destiny.gg"* ]]; then
     let "numChats=$numChats+1"
     swaymsg "[con_id=$id] mark --add \"chat$numChats\""
     if [[ "$xpos" != 1920 ]]; then
